@@ -29,7 +29,9 @@ https://boosty.to/holastor HYPE HYPE HYPE !!!!
 
 2) Распакуйте в .\AION2_TW\Aion2\Content;
 
-3) That's all folks!
+3) В игре нужно установить язык Английский
+
+4) That's all folks!
 
 ## Или Source-Install
  1) Скачайте Source code (zip) [Download](https://github.com/Holastor/AION-2-Localization/archive/refs/heads/main.zip)
@@ -40,7 +42,9 @@ https://boosty.to/holastor HYPE HYPE HYPE !!!!
 
  4) Удалить папку .\AION2_TW\Aion2\Content\Paks\L10N\Text\en-US
 
- 5) That's all folks!
+ 5) В игре нужно установить язык Английский
+
+ 7) That's all folks!
  
 <!--* Download Source code (zip) [Download](https://github.com/Holastor/Blade-and-Soul-2-Localization/archive/refs/heads/main.zip)
 * You need to download the source code and unpack it
