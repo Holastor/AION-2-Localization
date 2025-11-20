@@ -31,7 +31,7 @@ https://boosty.to/holastor HYPE HYPE HYPE !!!!
 
 3) That's all folks!
 
-## OR Source-Install
+## Или Source-Install
  1) Скачайте Source code (zip) [Download](https://github.com/Holastor/AION-2-Localization/archive/refs/heads/main.zip)
 
  2) В архиве найдите папку L10N;
@@ -61,18 +61,10 @@ https://boosty.to/holastor HYPE HYPE HYPE !!!!
 * That's all folks!; -->
 
 ## About
-  * Author: by Holastor;
+  * Author: by Holastor/AkiX;
 
 ## Warning
-1) Game crashes and unstable work are possible. Need more tests
-2) The author is not responsible for bugs, bans, and other problems.
-3) !!!!!! The author is not 100% sure whether it is possible to get a ban for this!!!!!!
-4) Is something not translated? Feel free to leave a comment and I'll try to add the translation for the next update.
-
-## License
-
-Apache License 2.0
-
-## Discord
-
-If you have any problems go to our [Discord](https://discord.gg/ecbKmM5h6Q)
+1) Возможны вылеты игры и нестабильная работа. Нужны дополнительные тесты.
+2) Автор не несёт ответственности за баги, баны и другие проблемы.
+3) !!!!!! Автор не уверен на 100%, можно ли за это получить бан!!!!!!
+4) Что-то не переведено? Не стесняйтесь оставлять комментарии, и я постараюсь добавить перевод в следующем обновлении.
