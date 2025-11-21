@@ -13,11 +13,16 @@ def extract_key_value_filtered_v6_4(file_path):
     """
     Извлекает пары Key-Value из бинарного файла, используя 4-байтовые поля длины.
     Поддерживает UTF-8 и UTF-16 для Key и Value.
+    
+    ДОБАВЛЕНО: Пропуск фиксированного 14-байтового заголовка файла.
     """
     
     LENGTH_FIELD_SIZE = 4
     MAX_SAFE_KEY_LENGTH = 20 * 1024 
     MAX_SAFE_VALUE_LENGTH = 10 * 1024 * 1024 
+    
+    # ФИКСИРОВАННЫЙ РАЗМЕР ЗАГОЛОВКА
+    HEADER_SIZE = 14 
     
     extracted_data = []
     
@@ -31,6 +36,14 @@ def extract_key_value_filtered_v6_4(file_path):
     i = 0
     data_len = len(data)
     print(f"Размер файла: {data_len} байт ({data_len:X} HEX)")
+
+    # --- СМЕЩЕНИЕ НАЧАЛА ---
+    if data_len >= HEADER_SIZE:
+        i = HEADER_SIZE
+        print(f"-> Пропущен заголовок ({HEADER_SIZE} байт). Начало парсинга с {i:X} HEX.")
+    else:
+        print("Предупреждение: Файл слишком мал для заголовка. Начинаем с 0.")
+    # ----------------------
 
     def read_length_field(data_slice, signed=False):
         if len(data_slice) < LENGTH_FIELD_SIZE:
