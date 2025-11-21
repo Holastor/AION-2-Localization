@@ -303,280 +303,27 @@ def create_binary_from_json_v7_6(json_file_path, output_file_path="repacked_l10n
     except Exception as e:
         print(f"\n❌ Ошибка при записи в файл: {e}")
 
-
-def extract_keys_values_to_csv(json_file_path, csv_file_path, columns_to_extract):
-    """
-    Загружает данные из JSON, извлекает Key, Value, Russian_value, 
-    генерирует 'id' и сохраняет в CSV с принудительным кавычками для текстовых полей.
-    """
+# def unescape_po_string(text):
+#     """
+#     Убирает экранирование, специфичное для PO-файлов (обратный слэш, двойные кавычки, \n),
+#     в правильном порядке.
+#     """
+#     text = str(text)
     
-    print(f"--- 1. Загрузка JSON файла: {os.path.basename(json_file_path)} ---")
+#     # 1. Заменяем двойной слэш на временную метку, чтобы не сломать \n и \"
+#     text = text.replace('\\\\', '\u0001') # \u0001 — это просто временный уникальный маркер
     
-    try:
-        with open(json_file_path, 'r', encoding='utf-8') as f:
-            data = json.load(f)
-            
-    except FileNotFoundError:
-        print(f"❌ Ошибка: Файл не найден по пути: {json_file_path}")
-        return
-        
-    except json.JSONDecodeError:
-        print(f"❌ Ошибка: Неверный формат JSON в файле: {json_file_path}")
-        return
+#     # 2. Убираем экранирование \n и \"
+#     text = text.replace('\\n', '\n')
+#     text = text.replace('\\"', '"')
     
-    if not isinstance(data, list) or not data:
-        print("❌ Ошибка: JSON-файл не содержит данных или не является списком объектов.")
-        return
-
-    # 2. Обработка данных и добавление ID
-    df = pd.DataFrame(data)
-    df.insert(0, 'id', range(1, 1 + len(df)))
-
-    # 3. Извлечение и подготовка столбцов
-    df.rename(columns={'Value': 'Original_Value', 'Russian_value': 'Russian_Value'}, inplace=True)
+#     # 3. Восстанавливаем слэши
+#     text = text.replace('\u0001', '')
     
-    required_cols = ['id'] + columns_to_extract
-    missing_columns = [col for col in required_cols if col not in df.columns]
+#     # **Дополнительный важный шаг для PO:** # Обработка конкатенации строк (если ваш regex ее не ловит)
+#     text = text.sub(r'"\s*"', '', text) 
     
-    if missing_columns:
-        print(f"❌ Ошибка: Не найдены следующие столбцы в JSON/DataFrame: {', '.join(missing_columns)}")
-        print("Проверьте, что в вашем JSON есть 'Key', 'Value' и 'Russian_value'.")
-        return
-    
-    df_output = df[required_cols]
-
-    # 4. Принудительное обрамление кавычками для текстовых полей
-    for col in ['Original_Value', 'Russian_Value']:
-        if col in df_output.columns:
-            df_output[col] = df_output[col].astype(str)
-            
-    # 5. Запись в CSV файл
-    try:
-        df_output.to_csv(
-            csv_file_path, 
-            index=False, 
-            encoding='utf-8', 
-            quoting=csv.QUOTE_NONNUMERIC
-        )
-
-        print(f"\n✅ Успех! Создан CSV файл: {csv_file_path}")
-    except Exception as e:
-        print(f"❌ Произошла непредвиденная ошибка при записи в CSV: {e}")
-
-def inject_translations_from_csv(json_path, csv_path, json_output_path, key_column_in_csv='Key', translation_column_in_csv='Translation'):
-    """
-    Берет переводы из CSV-файла и вставляет их в Russian_value 
-    в соответствующий JSON-файл, используя Key как идентификатор.
-    
-    Args:
-        json_path (str): Путь к рабочему JSON-файлу (extracted_localization.json).
-        csv_path (str): Путь к файлу с переводами (output.csv).
-        json_output_path (str): Путь для сохранения обновленного JSON.
-        key_column_in_csv (str): Имя столбца с идентификатором в CSV.
-        translation_column_in_csv (str): Имя столбца с переводом в CSV.
-    """
-    
-    # 1. Загрузка JSON-файла
-    try:
-        with open(json_path, 'r', encoding='utf-8') as f:
-            json_data = json.load(f)
-        print(f"✅ JSON-файл '{os.path.basename(json_path)}' загружен. Записей: {len(json_data)}")
-    except Exception as e:
-        print(f"❌ Ошибка при загрузке JSON: {e}")
-        return
-
-    # 2. Загрузка CSV-файла с переводами
-    try:
-        df_translations = pd.read_csv(csv_path)
-        print(f"✅ CSV-файл '{os.path.basename(csv_path)}' загружен. Строк: {len(df_translations)}")
-    except Exception as e:
-        print(f"❌ Ошибка при загрузке CSV: {e}")
-        return
-
-    # Проверка ключевых столбцов в CSV
-    if key_column_in_csv not in df_translations.columns or translation_column_in_csv not in df_translations.columns:
-        print(f"❌ Ошибка: В CSV-файле должны быть столбцы '{key_column_in_csv}' и '{translation_column_in_csv}'. Проверьте имена.")
-        return
-
-    # 3. Создание словаря переводов для быстрого поиска {Key: Translation}
-    translation_map = df_translations.set_index(key_column_in_csv)[translation_column_in_csv].to_dict()
-
-    # 4. Внедрение переводов в JSON
-    
-    update_count = 0
-    
-    for item in json_data:
-        key = item.get('Key')
-        data_type = item.get('Russian_Data_Type')
-        if key in translation_map:
-            # Получаем перевод и конвертируем его в строку (на всякий случай)
-            translation = str(translation_map[key])
-            if translation == "nan":
-                pass
-            else:
-                # # Вставляем перевод
-                item['Russian_Value'] = translation
-                
-                # # Russian_Data_Type по условию всегда UTF-16
-                if data_type == "":
-                    item['Russian_Data_Type'] = '1' 
-                else:
-                    pass
-            update_count += 1
-
-    print(f"\n--- Результат Внедрения ---")
-    print(f"🔄 Обработано записей в JSON: {len(json_data)}")
-    print(f"🎉 Успешно обновлено переводов: {update_count}")
-    
-    # 5. Сохранение обновленного JSON
-    try:
-        with open(json_output_path, 'w', encoding='utf-8') as f:
-            json.dump(json_data, f, ensure_ascii=False, indent=4)
-        print(f"💾 Обновленный JSON сохранен как: **{os.path.basename(json_output_path)}**")
-    except Exception as e:
-        print(f"❌ Ошибка при сохранении JSON: {e}")
-
-def merge_json_files_delete_append(base_json_path, source_json_path, output_json_path, key_field='Key', value_field='Value'):
-    """
-    Сравнивает два JSON-файла (списки объектов) по полю 'Key'. 
-    Если запись существует, проверяет 'Value'. Если Value отличается, 
-    старая запись помечается как удаленная, а новая добавляется в конец.
-    """
-    
-    # 1. Загрузка основного файла (Base File A)
-    try:
-        with open(base_json_path, 'r', encoding='utf-8') as f:
-            base_data = json.load(f)
-    except FileNotFoundError:
-        print(f"❌ Ошибка: Основной файл не найден по пути: {base_json_path}")
-        return
-    except json.JSONDecodeError as e:
-        print(f"❌ Ошибка: Неверный формат JSON в основном файле: {e}")
-        return
-
-    # 2. Загрузка исходного файла (Source File B)
-    try:
-        with open(source_json_path, 'r', encoding='utf-8') as f:
-            source_data = json.load(f)
-    except FileNotFoundError:
-        print(f"❌ Ошибка: Исходный файл не найден по пути: {source_json_path}")
-        return
-    except json.JSONDecodeError as e:
-        print(f"❌ Ошибка: Неверный формат JSON в исходном файле: {e}")
-        return
-
-    if not isinstance(base_data, list) or not isinstance(source_data, list):
-        print("❌ Ошибка: Оба файла JSON должны быть списками объектов ([{...}, {...}]).")
-        return
-
-    print(f"🔄 Начальное количество записей в {os.path.basename(base_json_path)}: {len(base_data)}")
-
-    # 3. Индексация основного файла и создание словаря флагов удаления
-    # base_flags: {Key: Index_in_base_data}
-    base_flags = {}
-    
-    for i, record in enumerate(base_data):
-        key_value = record.get(key_field)
-        if key_value is not None:
-            # Мы сохраняем индекс, чтобы потом удалить элемент по позиции
-            base_flags[key_value] = i
-
-    # 4. Сравнение, пометка на удаление и сбор новых записей
-    
-    keys_to_delete = set() # Набор индексов в base_data, которые нужно удалить
-    records_to_append = [] # Записи, которые нужно добавить в конец
-    
-    records_to_update = 0
-    records_to_insert = 0
-    records_to_skip = 0
-    
-    for record_b in source_data:
-        key_b = record_b.get(key_field)
-        
-        if key_b is None:
-            continue
-            
-        if key_b in base_flags:
-            # --- UPDATE LOGIC (DELETE + APPEND) ---
-            
-            # Получаем индекс существующей записи
-            index_a = base_flags[key_b]
-            record_a = base_data[index_a]
-            
-            # Сравниваем значения Value
-            value_a = record_a.get(value_field)
-            value_b = record_b.get(value_field)
-            
-            # Сравниваем как строки
-            if str(value_a) != str(value_b):
-                
-                # Value отличается:
-                # 1. Помечаем старую запись на удаление
-                keys_to_delete.add(index_a)
-                
-                # 2. Добавляем новую запись в конец
-                records_to_append.append(record_b)
-                
-                records_to_update += 1
-                
-            else:
-                # Value совпадает: Пропускаем
-                records_to_skip += 1
-                
-        else:
-            # --- INSERT LOGIC ---
-            
-            # Key не найден: Добавляем новую запись
-            records_to_append.append(record_b)
-            records_to_insert += 1
-
-    # 5. Сборка нового списка (Удаление старых + Добавление новых)
-    
-    # 5.1. Фильтрация (удаляем все, чьи индексы есть в keys_to_delete)
-    final_data = [record for i, record in enumerate(base_data) if i not in keys_to_delete]
-    
-    # 5.2. Добавление новых/обновленных записей в конец
-    final_data.extend(records_to_append)
-
-    # 6. Сохранение результата
-    
-    try:
-        with open(output_json_path, 'w', encoding='utf-8') as f:
-            json.dump(final_data, f, ensure_ascii=False, indent=4)
-            
-        print("\n--- Результат Слияния (DELETE + APPEND) ---")
-        print(f"🎉 Слияние успешно завершено.")
-        print(f"📊 Добавлено новых записей (INSERT): {records_to_insert}")
-        print(f"🔄 Обновлено записей (DELETE + APPEND): {records_to_update}")
-        print(f"⏭️ Пропущено (совпало): {records_to_skip}")
-        print(f"🗑️ Всего удалено старых записей: {len(keys_to_delete)}")
-        print(f"💾 Общее количество записей в новом файле: {len(final_data)}")
-        print(f"Файл сохранен как: **{os.path.basename(output_json_path)}**")
-        
-    except Exception as e:
-        print(f"❌ Ошибка при сохранении объединенного JSON: {e}")
-
-def unescape_po_string(text):
-    """
-    Убирает экранирование, специфичное для PO-файлов (обратный слэш, двойные кавычки, \n),
-    в правильном порядке.
-    """
-    text = str(text)
-    
-    # 1. Заменяем двойной слэш на временную метку, чтобы не сломать \n и \"
-    text = text.replace('\\\\', '\u0001') # \u0001 — это просто временный уникальный маркер
-    
-    # 2. Убираем экранирование \n и \"
-    text = text.replace('\\n', '\n')
-    text = text.replace('\\"', '"')
-    
-    # 3. Восстанавливаем слэши
-    text = text.replace('\u0001', '')
-    
-    # **Дополнительный важный шаг для PO:** # Обработка конкатенации строк (если ваш regex ее не ловит)
-    text = text.sub(r'"\s*"', '', text) 
-    
-    return text
+#     return text
 
 def convert_po_to_json_polib(po_input_path, json_output_path):
     """
@@ -649,56 +396,27 @@ def convert_po_to_json_polib(po_input_path, json_output_path):
 
 # Убираем агрессивную нормализацию (normalize_key и clean_key_for_writing)
 
-def unescape_po_string(text):
-    """
-    Убирает экранирование, специфичное для PO-файлов (обратный слэш, двойные кавычки, \n).
-    """
-    text = str(text)
-    text = text.replace('\\n', '\n')
-    text = text.replace('\\"', '"')
-    text = text.replace('\\\\', '\\')
-    return text
-
 def format_po_string(text):
-    """
-    Экранирует специальные символы внутри строк PO (двойные кавычки, обратный слэш).
-    """
-    text = str(text)
-    text = text.replace('\\', '\\\\')
-    text = text.replace('"', '\\"')
-    text = text.replace('\n', '\\n')
-    return text
+    return str(text).strip()
 
-def get_existing_contexts_from_po(po_path):
-    """
-    Парсит существующий PO-файл и возвращает набор всех msgctxt (Key) в нем.
-    Ключи обрабатываются только методом strip() для сохранения \t и пробелов.
-    """
+def get_po_file(po_path):
+    """Загружает или создает PO-файл с помощью polib."""
     try:
-        with open(po_path, 'r', encoding='utf-8') as f:
-            po_content = f.read()
+        po = polib.pofile(po_path)
     except FileNotFoundError:
-        print(f"❌ Ошибка: PO-файл для обновления не найден по пути {po_path}")
-        return set()
+        # Если файл не найден, создаем новый
+        po = polib.POFile()
     except Exception as e:
-        print(f"❌ Ошибка при чтении PO-файла: {e}")
-        return set()
-
-    # Шаблон для поиска msgctxt "..."
-    context_pattern = re.compile(r'msgctxt "(?P<msgctxt>.*?)"', re.DOTALL)
-    existing_contexts = set() 
-
-    # Проходим по всем совпадениям, убираем экранирование и убираем только крайние пробелы
-    for match in context_pattern.finditer(po_content):
-        raw_key = unescape_po_string(match.group("msgctxt"))
-        existing_contexts.add(raw_key.strip()) # <-- Только strip()
-        
-    return existing_contexts
+        print(f"❌ Критическая ошибка при загрузке PO-файла: {e}. Создается пустой POFile.")
+        po = polib.POFile()
+    return po
 
 def update_po_from_json(json_input_path, po_target_path):
     """
-    Загружает JSON, сравнивает его с существующим PO-файлом и добавляет 
-    только недостающие записи в конец PO-файла. Сравнение производится по точному Key.
+    Загружает JSON, сравнивает его с существующим PO-файлом, и перезаписывает файл, 
+    удаляя старые записи, если Value отличается.
+    
+    ДОБАВЛЕНО: Сохранение старого перевода (msgstr) в виде комментария.
     """
     
     # 1. Загрузка данных из JSON
@@ -709,66 +427,96 @@ def update_po_from_json(json_input_path, po_target_path):
         print(f"❌ Ошибка при загрузке JSON: {e}")
         return
     
-    if not isinstance(json_data, list):
-        print("❌ Ошибка: JSON-файл не является списком объектов.")
-        return
+    # 2. Загрузка PO-файла и создание словаря-источника (Key -> POEntry)
+    po = get_po_file(po_target_path)
     
-    # 2. Получение существующих контекстов из PO-файла
-    existing_contexts = get_existing_contexts_from_po(po_target_path)
+    # Индексируем существующие записи в PO для быстрого доступа
+    # {msgctxt: POEntry}
+    po_entry_map = {entry.msgctxt.strip(): entry for entry in po if entry.msgctxt}
+
+    # 3. Создание нового, чистого списка записей
     
-    # 3. Фильтрация и форматирование новых записей
-    new_po_entries = []
-    skipped_count = 0
-    added_count = 0
+    new_po = polib.POFile()
+    keys_processed = set()
+    
+    records_to_insert = 0
+    records_to_update = 0
+    records_to_skip = 0
+    
+    # 4. Проход по JSON (источнику истины)
     
     for item in json_data:
         key = item.get('Key', '')
         original_value = item.get('Value', '')
-        russian_value = item.get('Russian_Value', '')
+        russian_value = item.get('Russian_value', '') 
         
-        # ⚠️ Ключ для сравнения: берем ключ из JSON и убираем крайние пробелы
-        key_for_comparison = str(key).strip()
-        
-        # Если ключ уже существует, пропускаем запись
-        if key_for_comparison in existing_contexts:
-            skipped_count += 1
-            continue
-            
-        # Если Key или Original Value отсутствуют, пропускаем
         if not key or not original_value:
             continue
             
-        # ⚠️ Записываем ключ: НЕ ИСПОЛЬЗУЕМ clean_key_for_writing, чтобы сохранить \t
-        msgctxt = format_po_string(key) 
-        msgid = format_po_string(original_value)
-        msgstr = format_po_string(russian_value)
+        key_for_comparison = format_po_string(key)
+        value_from_json = format_po_string(original_value)
         
-        # Добавляем запись в формат PO
-        new_po_entries.append(f"""
-msgctxt "{msgctxt}"
-msgid "{msgid}"
-msgstr "{msgstr}"
-""")
-        added_count += 1
-        
-    # 4. Добавление новых записей в конец PO-файла
-    if new_po_entries:
-        try:
-            # Открываем файл в режиме добавления ('a')
-            with open(po_target_path, 'a', encoding='utf-8') as f:
-                # Добавляем новую строку перед записями
-                f.write("\n")
-                f.write("".join(new_po_entries))
-                
-            print("\n--- Результат Обновления ---")
-            print(f"🎉 Файл {os.path.basename(po_target_path)} успешно обновлен.")
-            print(f"➕ Добавлено новых записей: {added_count}")
-            print(f"⏭️ Пропущено существующих записей: {skipped_count}")
+        if key_for_comparison in po_entry_map:
+            # Key существует в старом PO-файле
+            existing_entry = po_entry_map.pop(key_for_comparison) # Удаляем из карты
+            value_from_po = existing_entry.msgid.strip()
             
-        except Exception as e:
-            print(f"❌ Ошибка при записи в PO-файл: {e}")
-    else:
-        print(f"\n🎉 Все {skipped_count} записей уже существуют в PO-файле. Обновление не требуется.")
+            if value_from_json != value_from_po:
+                # 4a. Value отличается: UPDATE
+                
+                # --- ЛОГИКА СОХРАНЕНИЯ СТАРОГО ПЕРЕВОДА ---
+                old_msgstr = existing_entry.msgstr.strip()
+                old_comment = existing_entry.comment
+                
+                # Добавляем старый перевод в комментарий, если он не пуст
+                if old_msgstr:
+                    old_comment = f"(OLD TRANSLATION: {old_msgstr})"
+                    if existing_entry.comment:
+                        old_comment = existing_entry.comment + "\n" + old_comment
+                
+                # Создаем новую запись, используя данные из JSON (новый Value)
+                new_entry = polib.POEntry(
+                    msgctxt=item.get('Key', ''),
+                    msgid=item.get('Value', ''),
+                    msgstr=item.get('Russian_value', ''), # Оставляем перевод из JSON (или пустой)
+                    comment=old_comment,
+                    tcomment=f"Original Value Type: {item.get('Value_Type', 'N/A')}",
+                    flags=['fuzzy'] # Отмечаем как fuzzy, так как msgid изменился
+                )
+                new_po.append(new_entry)
+                records_to_update += 1
+                
+            else:
+                # 4b. Key и Value совпадают: SKIP (сохраняем старую запись PO)
+                # Копируем старую запись (сохраняя существующий перевод)
+                new_po.append(existing_entry)
+                records_to_skip += 1
+                
+        else:
+            # 4c. Key не существует: INSERT
+            new_entry = polib.POEntry(
+                msgctxt=item.get('Key', ''),
+                msgid=item.get('Value', ''),
+                msgstr=item.get('Russian_value', ''),
+            )
+            new_po.append(new_entry)
+            records_to_insert += 1
+
+    # 5. Сохранение обновленного PO-файла (Перезапись)
+    
+    try:
+        new_po.save(po_target_path)
+        
+        print("\n--- Результат Полной Пересборки PO ---")
+        print(f"🎉 Файл {os.path.basename(po_target_path)} успешно обновлен (перезаписан).")
+        print(f"🔄 Обновлено записей (Value отличался): {records_to_update}")
+        print(f"➕ Добавлено новых записей (INSERT): {records_to_insert}")
+        print(f"🗑️ Удалено старых/лишних записей: {len(po_entry_map)}")
+        print(f"⏭️ Пропущено (Key и Value совпали): {records_to_skip}")
+        
+    except Exception as e:
+        print(f"❌ Ошибка при записи PO-файла: {e}")
+
         
 # --- РЕЖИМЫ РАБОТЫ ---
 
