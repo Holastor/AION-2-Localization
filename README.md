@@ -24,7 +24,7 @@ https://boosty.to/holastor HYPE HYPE HYPE !!!!
 
 ## Install
 
-* [Download](https://github.com/Holastor/Blade-and-Soul-2-Localization/releases/tag/4.0.0) Latest Release;
+* [Download](https://github.com/Holastor/AION-2-Localization/releases/tag/1.2) Latest Release;
 1) Скачайте Russian localization.zip;
 
 2) Распакуйте в .\AION2_TW\Aion2\Content;
