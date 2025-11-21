@@ -13,7 +13,7 @@ $targetFilename = "pakchunk502000-Windows_9999_P.pak"
 $targetSubpath = "Aion2\Content\Paks\L10N\Text\en-US"
 
 # Русские тексты для консоли
-$T_Title = "AION 2 TW Localization Updater (PowerShell)"
+$T_Title = "Запуск обновления локализации AION2 by - AkiX"
 $T_ConfigEmpty = "Файл конфигурации пуст. Запрашиваем путь заново."
 $T_PathFound = "✅ Найден сохраненный путь:"
 $T_FirstRun = "⚠️ Это первый запуск скрипта."
