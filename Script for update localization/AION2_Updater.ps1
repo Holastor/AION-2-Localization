@@ -1,5 +1,4 @@
 ﻿#Requires -Version 3.0
-# Requires -RunAsAdministrator # Оставляем закомментированным, чтобы не вызывать UAC без необходимости
 
 $OutputEncoding = [System.Text.Encoding]::UTF8
 
@@ -7,7 +6,6 @@ $OutputEncoding = [System.Text.Encoding]::UTF8
 # 1. КОНФИГУРАЦИЯ
 # ----------------------------------------------------
 $configFile = "aion2_path.cfg"
-# !!! ОБЯЗАТЕЛЬНО ЗАМЕНИТЕ IP НА ВАШ АДРЕС !!!
 $downloadUrl = "https://github.com/Holastor/AION-2-Localization/raw/refs/heads/main/Localization%20pak%20file/pakchunk502000-Windows_9999_P.pak" 
 $targetFilename = "pakchunk502000-Windows_9999_P.pak"
 $targetSubpath = "Aion2\Content\Paks\L10N\Text\en-US"
