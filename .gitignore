@@ -1,1 +1,5 @@
 Script for update localization/aion2_path.cfg
+Script for unpack and pack/L10NString.dat
+Script for unpack and pack/extracted_localization_L10NString_dat.json
+Localization po files/localization_template_old.po
+Script for unpack and pack/localization_template.po
