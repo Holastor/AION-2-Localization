@@ -480,7 +480,7 @@ def update_po_from_json(json_input_path, po_target_path):
                     msgid=item.get('Value', ''),
                     msgstr=item.get('Russian_value', ''), # Оставляем перевод из JSON (или пустой)
                     comment=old_comment,
-                    tcomment=f"Original Value Type: {item.get('Value_Type', 'N/A')}",
+                    # tcomment=f"Original Value Type: {item.get('Value_Type', 'N/A')}",
                     flags=['fuzzy'] # Отмечаем как fuzzy, так как msgid изменился
                 )
                 new_po.append(new_entry)
