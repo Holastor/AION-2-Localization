@@ -8,9 +8,9 @@
   <!-- <a href="#Source-Install">Source Install</a> • -->
   <!-- <a href="#Mobile-Install">Install Android</a> • -->
   <a href="#About">About</a> •
-  <a href="#License">License</a> •
+  <!-- <a href="#License">License</a> • -->
   <a href="#Warning">Warning</a> •
-  <a href="#Discord">Discord</a> •
+  <!-- <a href="#Discord">Discord</a> • -->
 </p>
 
 
