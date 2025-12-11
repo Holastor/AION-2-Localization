@@ -1,6 +1,6 @@
 <section class="article-view board-view" data-articleid="693878b84c3aed19db39c25a">
     <div class="view-header">
-        <h2 class="view-title">[Объявление] Список изменений от 10.12 (Ср) (Испр. 10.12 12:25)</h2>
+        <h2 class="view-title">[Объявление] Список изменений от 10.12 (Ср) (Испр. 10.12 12:25) Переведено AkiX.</h2>
         <div class="article-info-wrap">
             <div class="article-info">
                 <div class="writer"><span class="name name-admin"><img class="admin-icon" src="https://vod.plaync.com/Aion2/web/admin_dark.png" data-light-src="https://vod.plaync.com/Aion2/web/admin.png" data-dark-src="https://vod.plaync.com/Aion2/web/admin_dark.png" alt="Администратор"></span></div><span class="posted-at">10-12-2025 00:30:00</span>
