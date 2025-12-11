@@ -5,6 +5,22 @@ import polib
 
 
 def categorize_and_export_po():
+    print("""
+    ===================================================================
+                      JSON to PO: Smart Categorization
+    ===================================================================
+    This script performs the following actions:
+
+    1. Reads the source JSON file containing localization data.
+    2. Analyzes keys and groups entries based on three priority rules:
+       - Special Patterns: Extracts specific categories (e.g., Class Skills).
+       - Prefix Exceptions: Groups by defined prefixes (e.g., AchievementString).
+       - Standard Logic: Groups by the first 3 parts of the key.
+    3. Exports each group into a separate .po file using polib.
+
+    Results will be saved in the 'po_dictonaries' directory.
+    ===================================================================
+    """)
     separator = '_'
     input_json_path = input("Введите путь или имя JSON файла для упаковки: ")
     if not os.path.exists(input_json_path):
@@ -23,8 +39,9 @@ def categorize_and_export_po():
         "GuideData", "InputKeyMapping", "InputKeyText", "InventoryFilter", "NoteData", "PackageList", "Post", "QuestPart", "QuestString", "ServerName",
         "SkillAbnormalString", "SkillCondString", "SkillString_SkillString", 
         "SkillString_STR_SKILL_PC_ASSASSIN", "SkillString_STR_SKILL_PC_CHANTER", #<-- ЭТИ БУДУТ УДАЛЕНЫ
-        "SkillString_STR_SKILL_PC_CLERIC", "SkillString_STR_SKILL_PC_ELEMENTALIST", "SkillString_STR_SKILL_PC_GLADIATOR", "SkillString_STR_SKILL_PC_RANGER", #<-- ЭТИ БУДУТ УДАЛЕНЫ
-        "SkillString_STR_SKILL_PC_SORCERER", "SkillString_STR_SKILL_PC_TEMPLAR", "Skin", "PcSocialAction", "Message", "SkinMaterial", "SkinSet", "String_AttrStatName",
+        "SkillString_STR_SKILL_PC_CLERIC", "SkillString_STR_SKILL_PC_ELEMENTALIST", "SkillString_STR_SKILL_PC_GLADIATOR", "SkillString_STR_SKILL_PC_RANGER",#<-- ЭТИ БУДУТ УДАЛЕНЫ
+        "SkillString_STR_SKILL_PC_SORCERER", "SkillString_STR_SKILL_PC_TEMPLAR",  #<-- ЭТИ БУДУТ УДАЛЕНЫ
+        "Skin", "PcSocialAction", "Message", "SkinMaterial", "SkinSet", "String_AttrStatName",
         "String_StatName", "String_STR", "String_UI", "TeleportArtifact", "Title", "TradeTab", "Tag", "TitleCategory", "Wing", "String"
     ]
 
@@ -113,10 +130,25 @@ def categorize_and_export_po():
         categories[prefix].append(item)
 
     # 6. Экспорт каждой категории в отдельный PO-файл
-    
-    output_dir = "po_categories"
+    # while True:
+    #     dictmode = input(
+    #         "Вы создаете словарь для перевода или обновляете локализацию новыми строками?\n введите цифру описывающею директории для экспорта словарей: \n 1-po_dictonaries\n 2-po_update\nвведите цифру: ")
+    #     match dictmode:
+    #         case "1":
+    #             output_dir = "po_dictonaries"
+    #         case "2":
+    #             output_dir = "po_update"
+    #         case _:
+    #             print("\nIncorrect mode. Please enter 1 or 2\n")
+    #             continue
+    #     break
+    output_dir = "po_dictonaries"
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
+
+    # output_dir = "po_categories"
+    # if not os.path.exists(output_dir):
+    #     os.makedirs(output_dir)
 
     exported_count = 0
     total_entries = 0

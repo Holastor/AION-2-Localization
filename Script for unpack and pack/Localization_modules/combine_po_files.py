@@ -3,7 +3,35 @@ import polib
 import glob
 
 def combine_po_files():
-    input_directory = "po_categories"
+    print("""
+    ===================================================================
+                      PO Merger: Combine & Deduplicate
+    ===================================================================
+    This script consolidates multiple .po files into a single master file:
+
+    1. Prompts for the source directory (Dictionaries or Updates).
+    2. Scans for all .po files within the selected folder.
+    3. Merges entries into one file, automatically skipping duplicates
+       (optimized for speed using Set-based context checking).
+    4. Saves the result as 'combine_localization.po'.
+    ===================================================================
+    """)
+
+    while True:
+        dictmode = input(
+            "Какую папку использовать?\n введите цифру описывающею директорию словарей: \n 1 - po_dictonaries\n2 - po_update\n0 - exit\nвведите цифру: ")
+        match dictmode:
+            case "0":
+                break
+            case "1":
+                input_directory = "po_dictonaries"
+            case "2":
+                input_directory = "po_update"
+            case _:
+                print("\nIncorrect mode. Please enter 1 or 2\n")
+                continue
+        break
+
     output_file_path = "combine_localization.po"
     """
     Находит и объединяет все .po файлы в заданной директории в один мастер-файл.

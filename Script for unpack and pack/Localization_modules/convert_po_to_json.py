@@ -3,6 +3,21 @@ import os
 import polib
 
 def convert_po_to_json_polib():
+    print("""
+    ===================================================================
+                      PO to JSON: Converter
+    ===================================================================
+    This script converts a PO localization file back into JSON format:
+
+    1. Loads the specified .po file using polib.
+    2. Extracts and maps data:
+       - msgctxt -> Key
+       - msgid   -> Value (Original)
+       - msgstr  -> Localization_Value (Translation)
+    3. Formats entries into the specific JSON structure required.
+    4. Saves the result as 'translations_from_po.json'.
+    ===================================================================
+    """)
     po_input_path = input("Введите путь к PO-файлу для конвертации в JSON: ")
     if not os.path.exists(po_input_path):
         print(f"Error: File not found at path {po_input_path}")
