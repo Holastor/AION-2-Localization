@@ -59,7 +59,7 @@ def convert_po_to_json_polib():
             "Key": key,
             # polib гарантирует, что эти значения уже разэкранированы
             # и готовы для прямого использования в JSON
-            # "Value": original_value,
+            "Value": original_value,
             "Key_Type": "UTF-8",
             "Localization_Value": Localization_value,
             "Localization_Data_Type": 1
