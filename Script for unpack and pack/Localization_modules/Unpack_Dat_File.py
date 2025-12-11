@@ -166,7 +166,7 @@ def unpack_dat_file():
                 print("=" * 70)
                 print(f"🔑 Key: **{item['Key']}** (Type: {item['Key_Type']})")
                 # [FIX 2] Используем item['Value_Type'] для отображения
-                print(f"  > Value: '{item['Value_Type']}' (Type: {item['Value_Type']})")
+                print(f"  > Value: '{item['Value']}' ")
                 if idx == 4:
                     break
 
